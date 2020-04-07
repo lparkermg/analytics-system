@@ -14,5 +14,10 @@ namespace analytics_engine
         }
 
         public static DateTime Now => _now();
+
+        public static void Initialize(Func<DateTime> nowInitializer)
+        {
+            _now = nowInitializer;
+        }
     }
 }

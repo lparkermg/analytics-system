@@ -1,6 +1,6 @@
 using System;
+using analytics_engine.Services;
 using Microsoft.AspNetCore.Mvc;
-using Services;
 
 namespace analytics_engine.Controllers
 {

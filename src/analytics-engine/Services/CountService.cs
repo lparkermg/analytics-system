@@ -15,23 +15,24 @@ namespace analytics_engine.Services
         {
             _countFileBase = countFileBase;
             _currentDate = Clock.Now.ToString("dd-MM-yyyy");
-
-            var timer = new Timer();
-            timer.Elapsed += (a, ctx) => SaveCountsFile();
-            timer.Interval = 1000;
-            timer.AutoReset = true;
-            timer.Start();
         }
         
         public void Increment()
         {
+            SaveCountsFile();
             _currentCount++;
         }
 
-        public int Get() => _currentCount;
+        public int Get()
+        {
+            SaveCountsFile();
+            return _currentCount;
+        }
 
         public Dictionary<string, int> GetAll()
         {
+            SaveCountsFile();
+
             var dataFiles = Directory.GetFiles(_countFileBase, "*.txt");
             var data = new Dictionary<string, int>();
             foreach(var file in dataFiles)
@@ -45,7 +46,8 @@ namespace analytics_engine.Services
 
         private void SaveCountsFile()
         {
-            if (_currentDate == Clock.Now.ToString("dd-MM-yyyy"))
+            var now = Clock.Now.ToString("dd-MM-yyyy");
+            if (_currentDate == now)
             {
                 return;
             }
@@ -63,7 +65,7 @@ namespace analytics_engine.Services
             File.WriteAllText($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.txt", _currentCount.ToString());
 
             _currentCount = 0;
-            _currentDate = Clock.Now.ToString("dd-MM-yyyy");
+            _currentDate = now;
         }
     }
 }
