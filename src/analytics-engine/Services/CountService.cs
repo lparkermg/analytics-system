@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Timers;
 
-namespace Services
+namespace analytics_engine.Services
 {
     public class CountService : ICountService
     {
-        private string _countFileBase = "./counts";
+        private string _countFileBase;
         private int _currentCount = 0;
         private string _currentDate;
 
-        public CountService()
+        public CountService(string countFileBase)
         {
-            _currentDate = DateTime.Now.ToString("dd-MM-yyyy");
+            _countFileBase = countFileBase;
+            _currentDate = Clock.Now.ToString("dd-MM-yyyy");
 
             var timer = new Timer();
             timer.Elapsed += (a, ctx) => SaveCountsFile();
@@ -44,7 +45,7 @@ namespace Services
 
         private void SaveCountsFile()
         {
-            if (_currentDate == DateTime.Now.ToString("dd-MM-yyyy"))
+            if (_currentDate == Clock.Now.ToString("dd-MM-yyyy"))
             {
                 return;
             }
@@ -54,15 +55,15 @@ namespace Services
                 Directory.CreateDirectory(_countFileBase);
             }
 
-            if (File.Exists($"{_countFileBase}/{DateTime.Now.AddDays(-1).ToString("dd-MM-yyyy")}.txt"))
+            if (File.Exists($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.txt"))
             {
                 return;
             }
 
-            File.WriteAllText($"{_countFileBase}/{DateTime.Now.AddDays(-1).ToString("dd-MM-yyyy")}.txt", _currentCount.ToString());
+            File.WriteAllText($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.txt", _currentCount.ToString());
 
             _currentCount = 0;
-            _currentDate = DateTime.Now.ToString("dd-MM-yyyy");
+            _currentDate = Clock.Now.ToString("dd-MM-yyyy");
         }
     }
 }

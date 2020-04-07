@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Services
+namespace analytics_engine.Services
 {
     public interface ICountService
     {
