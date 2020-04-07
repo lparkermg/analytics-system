@@ -1,5 +1,5 @@
-/.vs/
-/build/
-/[Oo]bj/
-/[Bb]in/
+*/.vs/
+*/build/
+*/[Oo]bj/
+*/[Bb]in/
 *.ncrunchsolution.user
