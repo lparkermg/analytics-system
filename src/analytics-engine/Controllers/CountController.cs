@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using analytics_engine.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,9 +18,12 @@ namespace analytics_engine.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post(){
-            _counter.Increment();
-            return Ok();
+        public async Task<ActionResult> Post(){
+            using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
+            {
+                _counter.Increment(await reader.ReadToEndAsync());
+            }
+            return await Task.FromResult(Ok());
         }
 
         [HttpGet("today")]

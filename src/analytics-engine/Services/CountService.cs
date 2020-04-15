@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Timers;
 
 namespace analytics_engine.Services
@@ -8,37 +9,59 @@ namespace analytics_engine.Services
     public class CountService : ICountService
     {
         private string _countFileBase;
-        private int _currentCount = 0;
+        private Dictionary<string, int> _currentCounts = new Dictionary<string, int>();
         private string _currentDate;
 
         public CountService(string countFileBase)
         {
             _countFileBase = countFileBase;
             _currentDate = Clock.Now.ToString("dd-MM-yyyy");
+
+            if (!File.Exists($"{countFileBase}/ProcessedOld") && Directory.Exists(countFileBase))
+            {
+                var oldFiles = Directory.GetFiles(_countFileBase, "*.txt");
+                foreach (var file in oldFiles)
+                {
+                    var data = File.ReadAllText(file);
+                    var newData = new Dictionary<string, int>() { { "/", int.Parse(data) } };
+                    var newSerializeData = JsonSerializer.Serialize(newData);
+                    File.WriteAllText($"{countFileBase}/{Path.GetFileNameWithoutExtension(file)}.json", newSerializeData);
+                }
+                File.WriteAllText($"{ countFileBase}/ProcessedOld", "");
+            }
         }
         
-        public void Increment()
+        public void Increment(string url)
         {
             SaveCountsFile();
-            _currentCount++;
+
+            if (_currentCounts.ContainsKey(url))
+            {
+                _currentCounts[url]++;
+            }
+            else
+            {
+                _currentCounts.Add(url, 1);
+            }
         }
 
-        public int Get()
+        public Dictionary<string, int> Get()
         {
             SaveCountsFile();
-            return _currentCount;
+            return _currentCounts;
         }
 
-        public Dictionary<string, int> GetAll()
+        public Dictionary<string, Dictionary<string, int>> GetAll()
         {
             SaveCountsFile();
 
-            var dataFiles = Directory.GetFiles(_countFileBase, "*.txt");
-            var data = new Dictionary<string, int>();
+            var dataFiles = Directory.GetFiles(_countFileBase, "*.json");
+            var data = new Dictionary<string, Dictionary<string, int>>();
             foreach(var file in dataFiles)
             {
                 var read = File.ReadAllText(file);
-                data.Add(Path.GetFileNameWithoutExtension(file),int.Parse(read));
+                var json = JsonSerializer.Deserialize<Dictionary<string, int>>(read);
+                data.Add(Path.GetFileNameWithoutExtension(file), json);
             }
 
             return data;
@@ -57,14 +80,16 @@ namespace analytics_engine.Services
                 Directory.CreateDirectory(_countFileBase);
             }
 
-            if (File.Exists($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.txt"))
+            if (File.Exists($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.json"))
             {
                 return;
             }
 
-            File.WriteAllText($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.txt", _currentCount.ToString());
+            var todaysJson = JsonSerializer.Serialize(_currentCounts);
 
-            _currentCount = 0;
+            File.WriteAllText($"{_countFileBase}/{Clock.Now.AddDays(-1):dd-MM-yyyy}.json", todaysJson);
+
+            _currentCounts = new Dictionary<string, int>();
             _currentDate = now;
         }
     }
