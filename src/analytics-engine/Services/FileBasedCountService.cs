@@ -33,6 +33,11 @@ namespace analytics_engine.Services
         
         public void Increment(string url)
         {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Url cannot be null.");
+            }
+
             SaveCountsFile();
 
             if (_currentCounts.ContainsKey(url))

@@ -4,12 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Threading;
 
 namespace analytics_engine.tests
 {
     [TestFixture]
-    public class FileBasedCountServiceTests
+    internal sealed class FileBasedCountServiceTests
     {
         private FileBasedCountService _counter;
 
@@ -32,6 +31,27 @@ namespace analytics_engine.tests
             _counter = null;
         }
 
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("          ")]
+        public void Increment_GivenNoUrl_ShouldThrowArgumentException(string noUrl) =>
+            Assert.That(() => _counter.Increment(noUrl), Throws.ArgumentException.With.Message.EqualTo("Url cannot be null."));
+
+        [TestCase("/test/path")]
+        [TestCase("/another/test/path")]
+        public void Increment_GivenUrl_OnGet_ShouldReturnTheCorrectData(string path)
+        {
+            _counter.Increment(path);
+            var result = _counter.Get();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.ContainsKey(path));
+                Assert.That(result, Has.One.Items);
+                Assert.That(result[path], Is.EqualTo(1));
+            });
+        }
+
         [Test]
         public void Get_WhenIncrementWithAUrl_ShouldReturnUrlAndCount()
         {
@@ -39,8 +59,8 @@ namespace analytics_engine.tests
             var result = _counter.Get();
             Assert.Multiple(() =>
             {
-                Assert.IsTrue(result.ContainsKey("/test/path"));
-                Assert.AreEqual(1, result["/test/path"]);
+                Assert.That(result.ContainsKey("/test/path"));
+                Assert.That(result["/test/path"], Is.EqualTo(1));
             });
         }
 
