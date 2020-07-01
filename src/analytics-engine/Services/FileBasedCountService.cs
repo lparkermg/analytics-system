@@ -6,13 +6,13 @@ using System.Timers;
 
 namespace analytics_engine.Services
 {
-    public class CountService : ICountService
+    public sealed class FileBasedCountService : ICountService
     {
         private string _countFileBase;
         private Dictionary<string, int> _currentCounts = new Dictionary<string, int>();
         private string _currentDate;
 
-        public CountService(string countFileBase)
+        public FileBasedCountService(string countFileBase)
         {
             _countFileBase = countFileBase;
             _currentDate = Clock.Now.ToString("dd-MM-yyyy");

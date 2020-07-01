@@ -9,14 +9,14 @@ using System.Threading;
 namespace analytics_engine.tests
 {
     [TestFixture]
-    public class CountServiceTests
+    public class FileBasedCountServiceTests
     {
-        private CountService _counter;
+        private FileBasedCountService _counter;
 
         [SetUp]
         public void Setup()
         {
-            _counter = new CountService("./counts.test");
+            _counter = new FileBasedCountService("./counts.test");
         }
 
         [TearDown]
@@ -33,42 +33,7 @@ namespace analytics_engine.tests
         }
 
         [Test]
-        [Ignore("To be deleted upon full implementation of url handling.")]
-        public void Given_One_Increment_Call_When_Get_Should_Return_One_Count()
-        {
-            _counter.Increment("");
-            Assert.AreEqual(1, _counter.Get());
-        }
-
-        [Test]
-        [Ignore("To be deleted upon full implementation of url handling.")]
-        public void Given_Two_Increment_Calls_And_Another_On_A_New_Day_When_Get_Should_Return_One_Count()
-        {
-            _counter.Increment("");
-            _counter.Increment("");
-            Clock.Initialize(() => DateTime.Now.AddDays(1));
-            _counter.Increment("");
-
-            Assert.AreEqual(1, _counter.Get());
-        }
-
-        [Test]
-        [Ignore("To be deleted up full implementation of url handling.")]
-        public void Given_Two_Increment_Calls_And_Another_On_A_New_Day_Then_Progress_To_A_New_Day_And_Get_A_Count_Should_Produce_Two_Files()
-        {
-            _counter.Increment("");
-            _counter.Increment("");
-            Clock.Initialize(() => DateTime.Now.AddDays(1));
-            _counter.Increment("");
-            Clock.Initialize(() => DateTime.Now.AddDays(2));
-            _counter.Get();
-
-            var files = Directory.GetFiles("./counts.test", "*.txt");
-            Assert.AreEqual(2, files.Length);
-        }
-
-        [Test]
-        public void Given_One_Increment_Call_With_A_Url_When_Get_Return_Url_And_Count()
+        public void Get_WhenIncrementWithAUrl_ShouldReturnUrlAndCount()
         {
             _counter.Increment("/test/path");
             var result = _counter.Get();
@@ -80,7 +45,7 @@ namespace analytics_engine.tests
         }
 
         [Test]
-        public void Given_Two_Increment_Calls_With_The_Same_Url_And_Another_On_A_New_Day_When_Get_Should_Return_The_Second_Day() 
+        public void Get_WhenTwoIncrementCallsWithTheSameUrlAndAnotherOnANewDay_ShouldReturnTheSecondDay() 
         {
             _counter.Increment("/test/path/1");
             _counter.Increment("/test/path/2");
@@ -95,7 +60,7 @@ namespace analytics_engine.tests
         }
 
         [Test]
-        public void Given_Two_Increment_Calls_With_The_Same_Url_And_Another_On_A_New_Day_Should_Produce_Two_Json_Files()
+        public void Get_WhenTwoIncrementCallsWithTheSameUrlAndAnotherOnANewDay_ShouldProduceTwoJsonFiles()
         {
             _counter.Increment("/test/path/1");
             _counter.Increment("/test/path/2");
@@ -110,7 +75,7 @@ namespace analytics_engine.tests
         }
 
         [Test]
-        public void Given_An_Increment_Call_And_Another_On_A_New_Day_When_GetAll_Should_Return_The_Correct_Content()
+        public void GetAll_WhenAnIncrementCallAndAnotherOnANewDay_ShouldReturnTheCorrectContent()
         {
             var expectedResults = new Dictionary<string, Dictionary<string, int>>();
             expectedResults.Add(Clock.Now.ToString("dd-MM-yyyy"), new Dictionary<string, int>() { { "/test/path/1", 1 } });
